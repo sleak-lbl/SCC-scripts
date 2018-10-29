@@ -1,0 +1,506 @@
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..0d20b64
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++*.pyc
+diff --git a/etc/spack/compilers.yaml b/etc/spack/compilers.yaml
+new file mode 100644
+index 0000000..8ebb1b2
+--- /dev/null
++++ b/etc/spack/compilers.yaml
+@@ -0,0 +1,64 @@
++compilers:
++- compiler:
++    environment: {}
++    extra_rpaths: []
++    flags: {}
++    modules: []
++    operating_system: centos7
++    paths:
++      cc: /usr/bin/gcc
++      cxx: /usr/bin/g++
++      f77: /usr/bin/gfortran
++      fc: /usr/bin/gfortran
++    spec: gcc@4.8.5
++    target: x86_64
++- compiler:
++#    environment: {}
++    environment:
++       set:
++         LD_LIBRARY_PATH: /opt/ohpc/admin/pmix/lib:/opt/ohpc/pub/compiler/gcc/7.3.0/lib64
++    extra_rpaths: []
++    flags: {}
++    modules: []
++    operating_system: centos7
++    paths:
++      cc: /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gcc
++      cxx: /opt/ohpc/pub/compiler/gcc/7.3.0/bin/g++
++      f77: /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gfortran
++      fc: /opt/ohpc/pub/compiler/gcc/7.3.0/bin/gfortran
++    spec: gcc@7.3.0
++    target: x86_64
++- compiler:
++#    environment: {}
++    environment:
++       set:
++         LD_LIBRARY_PATH: /opt/ohpc/admin/pmix/lib
++    extra_rpaths: []
++    flags: {}
++    modules: []
++    operating_system: centos7
++    paths:
++      cc: /opt/ohpc/pub/compiler/llvm/5.0.1/bin/clang
++      cxx: /opt/ohpc/pub/compiler/llvm/5.0.1/bin/clang++
++      f77: /opt/ohpc/pub/compiler/llvm/5.0.1/bin/flang
++      fc: /opt/ohpc/pub/compiler/llvm/5.0.1/bin/flang
++    spec: clang@5.0.1
++    target: x86_64
++- compiler:
++#    environment: { LD_LIBRARY_PATH: /opt/ohpc/admin/pmix/lib }
++#    environment: {}
++    environment:
++        set:
++           LD_LIBRARY_PATH: /opt/ohpc/admin/pmix/lib:/export/home/share/AOCC/AOCC-1.2.1-Compiler/lib
++    extra_rpaths: []
++    flags: {}
++    modules: 
++      - aocc/1.2.1
++    operating_system: centos7
++    paths:
++      cc: /export/home/share/AOCC/AOCC-1.2.1-Compiler/bin/clang
++      cxx: /export/home/share/AOCC/AOCC-1.2.1-Compiler/bin/clang++
++      f77: /export/home/share/AOCC/AOCC-1.2.1-Compiler/bin/flang
++      fc: /export/home/share/AOCC/AOCC-1.2.1-Compiler/bin/flang
++    spec: clang@6.0.0
++    target: x86_64
+diff --git a/etc/spack/config.yaml b/etc/spack/config.yaml
+new file mode 100644
+index 0000000..1dc25e3
+--- /dev/null
++++ b/etc/spack/config.yaml
+@@ -0,0 +1,77 @@
++# -------------------------------------------------------------------------
++# This is the default spack configuration file.
++#
++# Settings here are versioned with Spack and are intended to provide
++# sensible defaults out of the box. Spack maintainers should edit this
++# file to keep it current.
++#
++# Users can override these settings by editing the following files.
++#
++# Per-spack-instance settings (overrides defaults):
++#   $SPACK_ROOT/etc/spack/config.yaml
++#
++# Per-user settings (overrides default and site settings):
++#   ~/.spack/config.yaml
++# -------------------------------------------------------------------------
++config:
++  # This is the path to the root of the Spack install tree.
++  # You can use $spack here to refer to the root of the spack instance.
++  install_tree: /home/share/spack
++
++  # Locations where templates should be found
++  template_dirs:
++    - $spack/templates
++
++  # Locations where different types of modules should be installed.
++  module_roots:
++    lmod:   /home/share/spack-modulefiles
++    tcl:   /home/share/spack-modulefiles
++    dotkit:   /home/share/spack-modulefiles
++
++
++  # Temporary locations Spack can try to use for builds.
++  #
++  # Spack will use the first one it finds that exists and is writable.
++  # You can use $tempdir to refer to the system default temp directory
++  # (as returned by tempfile.gettempdir()).
++  #
++  # A value of $spack/var/spack/stage indicates that Spack should run
++  # builds directly inside its install directory without staging them in
++  # temporary space.
++  #
++  # The build stage can be purged with `spack purge --stage`.
++  build_stage:
++    - $tempdir
++
++  log_path: /home/share/spack/logs
++  stage_path: /home/share/spack/stage
++
++  # Cache directory already downloaded source tarballs and archived
++  # repositories. This can be purged with `spack purge --downloads`.
++  source_cache: /home/share/cache/spack
++
++
++  # Cache directory for miscellaneous files, like the package index.
++  # This can be purged with `spack purge --misc-cache`
++  misc_cache: ~/.spack/cache
++
++
++  # If this is false, tools like curl that use SSL will not verify
++  # certifiates. (e.g., curl will use use the -k option)
++  verify_ssl: true
++
++
++  # If set to true, Spack will always check checksums after downloading
++  # archives. If false, Spack skips the checksum step.
++  checksum: true
++
++
++  # If set to true, `spack install` and friends will NOT clean
++  # potentially harmful variables from the build environment. Use wisely.
++  dirty: false
++
++
++  # The default number of jobs to use when running `make` in parallel.
++  # If set to 4, for example, `spack install` will run `make -j4`.
++  # If not set, all available cores are used by default.
++  build_jobs: 8
+diff --git a/etc/spack/defaults/config.yaml b/etc/spack/defaults/config.yaml
+index d8134e2..c002f59 100644
+--- a/etc/spack/defaults/config.yaml
++++ b/etc/spack/defaults/config.yaml
+@@ -16,8 +16,7 @@
+ config:
+   # This is the path to the root of the Spack install tree.
+   # You can use $spack here to refer to the root of the spack instance.
+-  #install_tree: $spack/opt/spack
+-  install_tree: /home/share/spack
++  install_tree: $spack/opt/spack
+ 
+   # Locations where templates should be found
+   template_dirs:
+@@ -25,10 +24,9 @@ config:
+ 
+   # Locations where different types of modules should be installed.
+   module_roots:
+-    #tcl:    $spack/share/spack/modules
+-    #lmod:   $spack/share/spack/lmod
+-    #dotkit: $spack/share/spack/dotkit
+-    lmod:   /home/share/modulefiles
++    tcl:    $spack/share/spack/modules
++    lmod:   $spack/share/spack/lmod
++    dotkit: $spack/share/spack/dotkit
+ 
+ 
+   # Temporary locations Spack can try to use for builds.
+@@ -44,14 +42,12 @@ config:
+   # The build stage can be purged with `spack purge --stage`.
+   build_stage:
+     - $tempdir
+-  #  - /nfs/tmp2/$user
+-  #  - $spack/var/spack/stage
+-
++    - /nfs/tmp2/$user
++    - $spack/var/spack/stage
+ 
+   # Cache directory already downloaded source tarballs and archived
+   # repositories. This can be purged with `spack purge --downloads`.
+-  #source_cache: $spack/var/spack/cache
+-  source_cache: /home/share/cache/spack
++  source_cache: $spack/var/spack/cache
+ 
+ 
+   # Cache directory for miscellaneous files, like the package index.
+diff --git a/etc/spack/defaults/modules.yaml b/etc/spack/defaults/modules.yaml
+index 8b6f1b4..9edbd26 100644
+--- a/etc/spack/defaults/modules.yaml
++++ b/etc/spack/defaults/modules.yaml
+@@ -15,8 +15,9 @@
+ # -------------------------------------------------------------------------
+ modules:
+   enable:
+-    - tcl
+-    - dotkit
++    - lmod
++#    - tcl
++#    - dotkit
+   prefix_inspections:
+     bin:
+       - PATH
+@@ -42,5 +43,7 @@ modules:
+       - CMAKE_PREFIX_PATH
+ 
+   lmod:
++    core_compilers:
++      - gcc@4.8.5
+     hierarchy:
+       - mpi
+diff --git a/etc/spack/defaults/packages.yaml b/etc/spack/defaults/packages.yaml
+index 4a4df28..a223ffd 100644
+--- a/etc/spack/defaults/packages.yaml
++++ b/etc/spack/defaults/packages.yaml
+@@ -37,3 +37,4 @@ packages:
+       szip: [libszip, libaec]
+       tbb: [intel-tbb]
+       jpeg: [libjpeg-turbo, libjpeg]
++
+diff --git a/etc/spack/modules.yaml b/etc/spack/modules.yaml
+new file mode 100644
+index 0000000..a2558b2
+--- /dev/null
++++ b/etc/spack/modules.yaml
+@@ -0,0 +1,51 @@
++# -------------------------------------------------------------------------
++# This is the default configuration for Spack's module file generation.
++#
++# Settings here are versioned with Spack and are intended to provide
++# sensible defaults out of the box. Spack maintainers should edit this
++# file to keep it current.
++#
++# Users can override these settings by editing the following files.
++#
++# Per-spack-instance settings (overrides defaults):
++#   $SPACK_ROOT/etc/spack/modules.yaml
++#
++# Per-user settings (overrides default and site settings):
++#   ~/.spack/modules.yaml
++# -------------------------------------------------------------------------
++modules:
++  enable:
++    - lmod
++  prefix_inspections:
++    bin:
++      - PATH
++    man:
++      - MANPATH
++    share/man:
++      - MANPATH
++    share/aclocal:
++      - ACLOCAL_PATH
++    lib:
++      - LIBRARY_PATH
++      - LD_LIBRARY_PATH
++    lib64:
++      - LIBRARY_PATH
++      - LD_LIBRARY_PATH
++    include:
++      - CPATH
++    lib/pkgconfig:
++      - PKG_CONFIG_PATH
++    lib64/pkgconfig:
++      - PKG_CONFIG_PATH
++    '':
++      - CMAKE_PREFIX_PATH
++
++  lmod:
++    core_compilers:
++      - gcc@7.3.0
++    hierarchy:
++      - mpi
++    all:
++      environment:
++        set:
++          '${PACKAGE}_ROOT': '${PREFIX}'
+diff --git a/etc/spack/packages.yaml b/etc/spack/packages.yaml
+new file mode 100644
+index 0000000..aa2e373
+--- /dev/null
++++ b/etc/spack/packages.yaml
+@@ -0,0 +1,47 @@
++# -------------------------------------------------------------------------
++# This file controls default concretization preferences for Spack.
++#
++# Settings here are versioned with Spack and are intended to provide
++# sensible defaults out of the box. Spack maintainers should edit this
++# file to keep it current.
++#
++# Users can override these settings by editing the following files.
++#
++# Per-spack-instance settings (overrides defaults):
++#   $SPACK_ROOT/etc/spack/packages.yaml
++#
++# Per-user settings (overrides default and site settings):
++#   ~/.spack/packages.yaml
++# -------------------------------------------------------------------------
++packages:
++  all:
++    providers:
++      blas: [amdlibs, openblas]
++      lapack: [amdlibs, openblas]
++      mpi: [openmpi, mpich]
++#  gcc:
++#    modules: gnu7
++#  clang:
++#    modules: aocc
++#  hdf5:
++#    buildable: False
++#    modules:
++#      hdf5: hdf5/1.10.1-fyyxmou
++  python:
++    paths:
++      python@2.7.14%gcc@7.3.0 patches=123082ab3483ded78e86d7c809e98a804b3465b4683c96bd79a2fd799f572244 +pic+shared~tk~ucs4 arch=linux-centos7-x86_64: /usr
++  cmake:
++    paths:
++      cmake: /usr/local
++  openmpi:
++    modules:
++      openmpi@3.1.0: openmpi3/3.1.0
++  bison:
++    paths:
++      bison: /usr
++  m4:
++    paths:
++      m4: /usr
++  perl:
++    paths:
++      perl: /usr
+diff --git a/lib/spack/env/cc b/lib/spack/env/cc
+index b06c6fd..e16d6fc 100755
+--- a/lib/spack/env/cc
++++ b/lib/spack/env/cc
+@@ -1,5 +1,3 @@
+-#!/bin/bash
+-##############################################################################
+ # Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+ # Produced at the Lawrence Livermore National Laboratory.
+ #
+@@ -228,7 +226,59 @@ fi
+ 
+ # Save original command for debug logging
+ input_command="$@"
++
++#sleak: dirty hack: openmpi build calls:
++# flang ... -soname something.so ...
++# but flang doesn't recognise -soname as an object, and instead of forwarding it 
++# to the linker to deal with, throws an error. So we'll explicitly forward it to the linker:
++#aa=$(sed -e 's/ -soname \([^ ]\+\)/ -Wl,-soname,\1/g' <<< "$*")
++#if [[ "$aa" != "$*" ]]; then
++#  echo "replaced soname in args, original:"
++#  echo "$*"
++#  echo "new:"
++#  echo "$aa"
++#fi
++#args=($aa)
++##args=("$@")
++#sleak: so, that works, but still need to ("$@") functionality to correctly handle groups
++#       of arguments wrapped in quotes. So, how to use "$@" splitting on a variable other than the command line?
+ args=("$@")
++#sleak: this is bad, why doesn't it look in /usr/lib64 automatically?
++#args=(-L/usr/lib64 "${args[@]}")
++for (( i=0; i<${#args[@]} ; i++)) ; do
++    if [[ "${args[$i]}" =~ ^-soname$ ]]; then
++        ip1=$((i+1))
++        echo "found -soname _${args[$ip1]}_"
++        args[$i]="-Wl,-soname,${args[$ip1]}"
++        args[$ip1]=""
++        echo "now args[$i] is ${args[$i]}"
++        echo "and args[i+1] is ${args[$ip1]}"
++    fi
++done
++#    # and, some other args have the same issue:
++for (( i=0; i<${#args[@]} ; i++)) ; do
++     if [[ "${args[$i]}" =~ ^--whole-archive$ ]]; then
++        echo "found -whole-archive"
++        args[$i]="-Wl,${args[$i]}"
++        echo "now args[$i] is ${args[$i]}"
++    fi
++     if [[ "${args[$i]}" =~ ^--no-whole-archive$ ]]; then
++        echo "found --no-whole-archive"
++        args[$i]="-Wl,${args[$i]}"
++        echo "now args[$i] is ${args[$i]}"
++    fi
++done
++#for (( i=0; i<${#args[@]} ; i++)) ; do
++#    if [[ "${args[$i
++#    args[i]=$(sed -e 's/^-soname \([^ ]\+\)/-Wl,-soname,\1/g' <<< "${args[$i]}")
++#done
++grep --label=sleak -e whole-archive -e soname <<< "${args[@]}"
++
++#sleak: and add -fPIC always!
++args=(-fPIC "${args[@]}")
++#sleak: even worse: how to get a CPP flag in? this is the wrong way,
++# bloody spack docs don't say the right way:
++#args=(-UMPICH_MPI_FROM_PMPI "${args[@]}")
+ 
+ # Prepend cppflags, cflags, cxxflags, fcflags, fflags, and ldflags
+ 
+diff --git a/lib/spack/spack/__init__.py b/lib/spack/spack/__init__.py
+index 21af604..6cdc805 100644
+--- a/lib/spack/spack/__init__.py
++++ b/lib/spack/spack/__init__.py
+@@ -52,6 +52,7 @@ operating_system_path = join_path(module_path, 'operating_systems')
+ test_path      = join_path(module_path, "test")
+ hooks_path     = join_path(module_path, "hooks")
+ var_path       = join_path(spack_root, "var", "spack")
++log_path       = var_path
+ stage_path     = join_path(var_path, "stage")
+ repos_path     = join_path(var_path, "repos")
+ share_path     = join_path(spack_root, "share", "spack")
+@@ -121,6 +122,12 @@ concretizer = DefaultConcretizer()
+ #-----------------------------------------------------------------------------
+ _config = spack.config.get_config('config')
+ 
++# where to write logfiles by default:
++log_path = canonicalize_path(
++    _config.get('log_path', log_path))
++
++stage_path = canonicalize_path(
++    _config.get('stage_path', stage_path))
+ 
+ # Path where downloaded source code is cached
+ cache_path = canonicalize_path(
+diff --git a/lib/spack/spack/build_environment.py b/lib/spack/spack/build_environment.py
+index 81626d7..2f57460 100644
+--- a/lib/spack/spack/build_environment.py
++++ b/lib/spack/spack/build_environment.py
+@@ -123,6 +123,9 @@ class MakeExecutable(Executable):
+             jobs = "-j%d" % self.jobs
+             args = (jobs,) + args
+ 
++	#sjl: dirty hack:
++	args = ('V=1',) + args
++
+         return super(MakeExecutable, self).__call__(*args, **kwargs)
+ 
+ 
+diff --git a/lib/spack/spack/cmd/install.py b/lib/spack/spack/cmd/install.py
+index 8b6c04b..f7d2ae1 100644
+--- a/lib/spack/spack/cmd/install.py
++++ b/lib/spack/spack/cmd/install.py
+@@ -133,7 +133,8 @@ def default_log_file(spec):
+     """
+     fmt = 'test-{x.name}-{x.version}-{hash}.xml'
+     basename = fmt.format(x=spec, hash=spec.dag_hash())
+-    dirname = fs.join_path(spack.var_path, 'junit-report')
++    #dirname = fs.join_path(spack.var_path, 'junit-report')
++    dirname = fs.join_path(spack.log_path, 'junit-report')
+     fs.mkdirp(dirname)
+     return fs.join_path(dirname, basename)
+ 
+diff --git a/var/spack/repos/builtin/packages/libxsmm/package.py b/var/spack/repos/builtin/packages/libxsmm/package.py
+index 3cde611..cbc38ab 100644
+--- a/var/spack/repos/builtin/packages/libxsmm/package.py
++++ b/var/spack/repos/builtin/packages/libxsmm/package.py
+@@ -65,6 +65,8 @@ class Libxsmm(MakefilePackage):
+     conflicts('+header-only', when='@:1.6.2',
+               msg='Header-only is available since v1.6.2!')
+ 
++    build_targets = ['', 'generator']
++
+     @property
+     def libs(self):
+         result = find_libraries(['libxsmm', 'libxsmmf'], root=self.prefix,
+@@ -110,6 +112,7 @@ class Libxsmm(MakefilePackage):
+             install_tree('src', prefix.src)
+         else:
+             install_tree('lib', prefix.lib)
++	install_tree('bin', prefix.bin)
+         mkdirp(prefix.doc)
+         for doc_file in glob(join_path('documentation', '*.md')):
+             install(doc_file, prefix.doc)
+diff --git a/var/spack/repos/builtin/packages/mvapich2/package.py b/var/spack/repos/builtin/packages/mvapich2/package.py
+index 4454907..2485085 100644
+--- a/var/spack/repos/builtin/packages/mvapich2/package.py
++++ b/var/spack/repos/builtin/packages/mvapich2/package.py
+@@ -129,7 +129,7 @@ class Mvapich2(AutotoolsPackage):
+             if self.version > Version('2.0'):
+                 opts = [
+                     '--with-pmi=pmi2',
+-                    '--with-pm=slurm'
++                    '--with-pm=slurm',
+                 ]
+             else:
+                 opts = [
