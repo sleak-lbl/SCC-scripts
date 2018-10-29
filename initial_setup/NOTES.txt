@@ -1,0 +1,114 @@
+Need to set up iptables: (magic from Tony)
+for compute nodes to be able to see outside network, need to setup NAT via iptables on master node:
+eth=enp3s0  # 2017
+eth=eth0 # ? 2018 or en..whatever
+sysctl -w net.ipv4.ip_forward=1 # do in /etc/sysctl.conf for persistent
+sysctl -p # to actually trigger it at runtime
+[root@scc sleak]# iptables -X
+[root@scc sleak]# iptables -F
+[root@scc sleak]# iptables -t nat -X
+[root@scc sleak]# iptables -t nat -F
+[root@scc sleak]# iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+[root@scc sleak]# iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+[root@scc sleak]# iptables -t nat -I POSTROUTING -o $eth -j MASQUERADE
+
+to persist iptables over reboot: (older sys v init.d method):
+/sbin/service iptables save
+=> looks like this is still the correct method
+=> but it doesn't work! best to just disable iptables
+
+on compute node need:
+route add default gw 10.0.1.1
+
+=> should actually use wwsh to add gateway to compute node image <=
+can do "wwsh node set * -D eth0 --gateway=xxx.xxx.xxx.xxx" for existing nodes
+and/or, add it to /etc/warewulf/defaults/node.conf on master
+
+
+[root@scc 0.11.2]# wwsh file list
+dynamic_hosts           :  rw-r--r-- 0   root root              944 /etc/hosts
+group                   :  rw-r--r-- 1   root root              876 /etc/group
+hosts                   :  rw-r--r-- 1   root root              944 /etc/hosts
+ifcfg-ib0.ww            :  rw-r--r-- 1   root root              133 /etc/sysconfig/network-scripts/ifcfg-ib0
+lmod.sh                 :  rw-r--r-- 1   root root             1367 /etc/profile.d/lmod.sh
+munge.key               :  r-------- 1   munge munge           1024 /etc/munge/munge.key
+network                 :  rw-r--r-- 1   root root               21 /etc/sysconfig/network
+passwd                  :  rw-r--r-- 1   root root             1892 /etc/passwd
+shadow                  :  rw-r----- 1   root root             1743 /etc/shadow
+slurm.conf              :  rw-r--r-- 1   root root             2429 /etc/slurm/slurm.conf
+[root@scc 0.11.2]# wwsh provision list
+NODE                VNFS            BOOTSTRAP             FILES
+================================================================================
+c2                  centos7.5       3.10.0-862.el7.x86_64 dynamic_hosts,grou...
+c3                  centos7.5       3.10.0-862.el7.x86_64 dynamic_hosts,grou...
+c4                  centos7.5       3.10.0-862.el7.x86_64 dynamic_hosts,grou...
+[root@scc 0.11.2]# wwsh provision print
+#### c2 #######################################################################
+             c2: BOOTSTRAP        = 3.10.0-862.el7.x86_64
+             c2: VNFS             = centos7.5
+             c2: FILES            = dynamic_hosts,group,ifcfg-ib0.ww,lmod.sh,munge.key,network,passwd,shadow,slurm.conf
+             c2: PRESHELL         = FALSE
+             c2: POSTSHELL        = FALSE
+             c2: CONSOLE          = UNDEF
+             c2: PXELINUX         = UNDEF
+             c2: SELINUX          = DISABLED
+             c2: KARGS            = "net.ifnames=1,biosdevname=1"
+             c2: BOOTLOCAL        = FALSE
+#### c3 #######################################################################
+             c3: BOOTSTRAP        = 3.10.0-862.el7.x86_64
+             c3: VNFS             = centos7.5
+             c3: FILES            = dynamic_hosts,group,ifcfg-ib0.ww,lmod.sh,munge.key,network,passwd,shadow,slurm.conf
+             c3: PRESHELL         = FALSE
+             c3: POSTSHELL        = FALSE
+             c3: CONSOLE          = UNDEF
+             c3: PXELINUX         = UNDEF
+             c3: SELINUX          = DISABLED
+             c3: KARGS            = "net.ifnames=1,biosdevname=1"
+             c3: BOOTLOCAL        = FALSE
+#### c4 #######################################################################
+             c4: BOOTSTRAP        = 3.10.0-862.el7.x86_64
+             c4: VNFS             = centos7.5
+             c4: FILES            = dynamic_hosts,group,ifcfg-ib0.ww,lmod.sh,munge.key,network,passwd,shadow,slurm.conf
+             c4: PRESHELL         = FALSE
+             c4: POSTSHELL        = FALSE
+             c4: CONSOLE          = UNDEF
+             c4: PXELINUX         = UNDEF
+             c4: SELINUX          = DISABLED
+             c4: KARGS            = "net.ifnames=1,biosdevname=1"
+             c4: BOOTLOCAL        = FALSE
+[root@scc 0.11.2]# wwsh file print ifcfg-ib0.ww
+#### ifcfg-ib0.ww #############################################################
+ifcfg-ib0.ww    : ID               = 17
+ifcfg-ib0.ww    : NAME             = ifcfg-ib0.ww
+ifcfg-ib0.ww    : PATH             = /etc/sysconfig/network-scripts/ifcfg-ib0
+ifcfg-ib0.ww    : ORIGIN           = /opt/ohpc/pub/examples/network/centos/ifcfg-ib0.ww
+ifcfg-ib0.ww    : FORMAT           = data
+ifcfg-ib0.ww    : CHECKSUM         = 6e2b44daff48bf3f367a5ed2917746eb
+ifcfg-ib0.ww    : INTERPRETER      = UNDEF
+ifcfg-ib0.ww    : SIZE             = 133
+ifcfg-ib0.ww    : MODE             = 0644
+ifcfg-ib0.ww    : UID              = 0
+ifcfg-ib0.ww    : GID              = 0
+[root@scc 0.11.2]# tail /etc/slurm/slurm.conf
+PropagateResourceLimitsExcept=MEMLOCK
+AccountingStorageType=accounting_storage/filetxt
+Epilog=/etc/slurm/slurm.epilog.clean
+#NodeName=scc,c[2-4] Sockets=2 CoresPerSocket=32 ThreadsPerCore=2 State=UNKNOWN
+NodeName=c[2-4] Sockets=2 CoresPerSocket=32 ThreadsPerCore=2 State=UNKNOWN
+NodeName=c1 Sockets=2 CoresPerSocket=32 ThreadsPerCore=2 State=UNKNOWN NodeHostName=scc
+PartitionName=normal Nodes=ALL Default=YES MaxTime=INFINITE State=UP
+ReturnToService=1
+# added by Steve:
+SallocDefaultCommand    = "srun -n1 -N1 --mem-per-cpu=0 --pty --preserve-env --mpi=none $SHELL -l"
+[root@scc 0.11.2]# tail /etc/slurm/slurm.epilog.clean
+echo 3 > /proc/sys/vm/drop_caches
+
+#
+# No other SLURM jobs, purge all remaining processes of this user
+#
+#sleak: not on head node, as we use it for login node too:
+if [[ ! $(uname -n) =~ ^scc ]]; then
+pkill -KILL -U $SLURM_UID
+fi
+exit 0
+
