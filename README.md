@@ -76,8 +76,11 @@ Scripts and notes for setting up SCC clusters
 ### After first boot:
 
 - If using NVMe SSD, kernel won't automagically see it
+
   `lspci` shows it, but `lsblk` does not
+
 - Reason is that nvme.ko kernel module is needed
+
 - for compute nodes: add:
   ```
   drivers += kernel/drivers/nvme/
