@@ -39,9 +39,11 @@ Scripts and notes for setting up SCC clusters
   network, the internal net and the mgmt net. See
   http://www.tecmint.com/create-multiple-ip-addresses-to-one-single-network-interface/ and
   https://serverfault.com/questions/406123/second-ip-address-on-the-same-interface-but-on-a-different-subnet
+
   (basically: in `/etc/sysconfig/network-scripts` add a new file `ifcfg-em1:0`, mostly 
   copied from `ifcfg-em1` and stripped down. Include `bootproto="static"`, `defroute="no"`, 
   `device="em1:0"`, `ipaddr="10.10.150.4"`, `prefix=24` `gateway=128.55.216.1`.
+
   - note static ip for internal etc network
   - check it with ip addr
 
@@ -50,7 +52,6 @@ Scripts and notes for setting up SCC clusters
     systemctl stop NetworkManager
     systemctl disable NetworkManager
     ```
-
 
 ### Making and using the USB installer
 
@@ -120,6 +121,7 @@ Scripts and notes for setting up SCC clusters
   - SSH Server CBC Mode Ciphers Enabled - remove `*-cbc`
 
   - HTTP TRACE / TRACK Methods Allowed
+
     http://www.techstacks.com/howto/disable-tracetrack-in-apache-httpd.html
 
 - General tips:
@@ -134,6 +136,8 @@ Scripts and notes for setting up SCC clusters
 
 
 ### Networking
+
+- see 'vitual interfaces' note in NUC notes above
 
 - for compute nodes to be able to see outside network, need to setup NAT via iptables on master node:
 ```
@@ -158,10 +162,10 @@ sysctl -p    # to actually trigger it at runtime
    route add default gw 10.0.1.1
   ```
   - add it to the provisioning:
+
     `wwsh node set \* -D eth0 --gateway=xxx.xxx.xxx.xxx` for existing nodes
+
   - and/or, add it to `/etc/warewulf/defaults/node.conf` on master
-
-
 
 
 ### RPM dependency hell
